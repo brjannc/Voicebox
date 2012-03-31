@@ -1,0 +1,33 @@
+formats:
+  skybot:
+    message: '^&lt;(\S+)&gt;'
+    action: '^\* (\S+)'
+    join: '^-!- \S+ \[\S+\] has joined'
+    part: '^-!- \S+ \[\S+\] has left'
+    quit: '^-!- \S+ has quit'
+    # nick: 
+    kick: '^-!- \S+ was kicked from'
+    mode: '^-!- mode'
+    # notice:
+  energymech:
+    message: '^&lt;(\S+)&gt;'
+    action: '^\* (\S+)'
+    join: '^\*\*\* Joins:'
+    part: '^\*\*\* Parts:'
+    quit: '^\*\*\* Quits:'
+    nick: '^\*\*\* \S+ is now known as'
+    kick: '^\*\*\* \S+ was kicked by'
+    mode: '^\*\*\* \S+ sets mode:'
+    notice: '^-\S+-'
+
+channels:
+  foo:
+    channel-name: '#foo'
+    log-directory: /home/brjannc/log
+    log-template: '#foo_%Y%m%d.log'
+    log-format: energymech
+  bar:
+    channel-name: '#bar'
+    log-directory: /home/brjannc/log
+    log-template: '%Y/irc.example.com/#bar/#bar.%m-%d.log'
+    log-format: skybot
