@@ -1,0 +1,6 @@
+!!!
+#content.container
+  %div.well
+    - File.open(@log) do |file|
+      - while (line = file.gets)
+        %div.line= markup(line, @log_format)

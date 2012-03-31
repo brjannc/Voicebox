@@ -1,0 +1,51 @@
+@red: #9d261d;
+@orange: darken(#f89406, 15%);
+@yellow: #ffc40d;
+@green: #46a546;
+@blue: darken(#049cdb, 15%);
+@purple: #7a43b6;
+@pink: #c3325f;
+
+body { background-color: DimGray; }
+
+.line {
+  display: table;
+  font-family: monospace; 
+}
+
+.timestamp { 
+  display: table-cell;
+  padding-right: 1em;
+  color: DimGray; 
+}
+
+.text { 
+  display: table-cell;
+}
+
+//
+// log text classes
+//
+
+.message { }
+.action { }
+.join { color: @green; }
+.part { color: @blue; }
+.quit { color: @blue; }
+.nick { color: @purple; }
+.kick { color: @red; }
+.mode { color: @orange; }
+.notice { color: @orange; }
+
+//
+// nick colors
+//
+
+.c1 { color: @red; }
+.c2 { color: @orange; }
+.c3 { color: @green; }
+.c4 { color: @blue; }
+.c5 { color: @purple; }
+.c6 { color: @pink; }
+.c7 { color: darken(@purple, 15%); }
+.c8 { color: darken(@green, 15%); }
