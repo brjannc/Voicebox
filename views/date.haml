@@ -1,6 +1,6 @@
 !!!
 #content.container
   %div.well
-    - File.open(@log) do |file|
+    - File.open(@log, 'r:utf-8') do |file|
       - while (line = file.gets)
         %div.line= markup(line, @log_format)
