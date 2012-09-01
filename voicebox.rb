@@ -68,7 +68,7 @@ get %r{^/(\w+)/(\d{4}-\d{2}-\d{2})(?:\.(\w+))?$} do |channel, date, format|
   end
 end
 
-get %r{^/(\w+)$} do |channel|
+get %r{^/(\w+)/?$} do |channel|
   pass unless settings.channels.include?(channel)
 
   @channel = channel
