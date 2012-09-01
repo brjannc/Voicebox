@@ -1,1 +1,7 @@
--# TODO ^_^
+!!! 5
+#content.container
+  %div.well
+    %ul
+      - @dates.each do |date|
+        - pretty_date = date.strftime("%Y-%m-%d")
+        %li= link_to("/#{@channel}/#{pretty_date}.html", pretty_date)

@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 # Copyright (C) 2012 brjannc <brjannc at gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,6 +18,7 @@
 require 'cgi'
 require 'date'
 require 'haml'
+require 'iconv'
 require 'sinatra'
 require 'yaml'
 
@@ -34,8 +37,8 @@ configure do
     set :formats, config['formats']
     set :version, "0.1"
   end
-
-  set :haml, :format => :html5
+  
+  set :ic, Iconv.new('UTF-8//IGNORE', 'UTF-8')
 end
 
 # match /<channel>/<date>[.format]
@@ -68,6 +71,9 @@ end
 get %r{^/(\w+)$} do |channel|
   pass unless settings.channels.include?(channel)
 
+  @channel = channel
+  @dates = channel_dates(channel).sort.reverse
+
   haml :channel
 end
 
@@ -84,16 +90,27 @@ helpers do
     date.strftime("#{config['log-directory']}/#{config['log-template']}")
   end
 
-  def channel_logs(channel)
+  def channel_dates(channel)
     # TODO: error checking
-
     config = settings.channels[channel]
-    pattern = "#{config['log-directory']}/#{config['log-template']}".gsub(/(%[^%])+/, '*')
-    Dir.glob(pattern).sort.reverse
+    template = "#{config['log-directory']}/#{config['log-template']}"
+    pattern = template.gsub(/(%[^%])+/, '*')
+
+    Dir.glob(pattern).map { |filename| DateTime.strptime(filename, template) }
+  end
+
+  def link_to(url, text = url, opts = {})
+    attributes = ''
+    opts.each { |key,value| attributes << key.to_s << '="' << value << '" '}
+    "<a href=\"#{url}\" #{attributes}>#{text}</a>"
   end
 
   def linkify(text)
-    text.gsub %r{((https?://|www\.)([-\w\.]+)+(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)?)}, %Q{<a href="\\1">\\1</a>}
+      CGI.escapeHTML(text).gsub %r{((https?://|www\.)([-\w\.]+)+(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)?)}, %Q{<a href="\\1">\\1</a>}
+  end
+
+  def sanitize(text)
+    settings.ic.iconv(text + ' ')[0..-2]
   end
 
   def markup(line, format)
@@ -101,7 +118,7 @@ helpers do
 
     tokens = line.partition(" ")
     timestamp = tokens[0]
-    text = linkify(CGI.escapeHTML(tokens[2]))
+    text = linkify(sanitize(tokens[2]))
     text_class = nil
 
     settings.formats[format].each do |type, pattern|
@@ -126,10 +143,9 @@ helpers do
       text_class = "message"
     end
 
-  <<END
+    <<-eos
 <span class="timestamp">#{timestamp}</span>
 <span class="#{text_class}">#{text}</span>
-END
-
+    eos
   end
 end
