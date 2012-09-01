@@ -1,6 +1,7 @@
 !!! 5
 #content.container
   %div.well
+    %h1 #{@channel_name}
     %ul
       - @dates.each do |date|
         - pretty_date = date.strftime("%Y-%m-%d")

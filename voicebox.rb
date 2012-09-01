@@ -72,6 +72,7 @@ get %r{^/(\w+)$} do |channel|
   pass unless settings.channels.include?(channel)
 
   @channel = channel
+  @channel_name = settings.channels[channel]['channel-name']
   @dates = channel_dates(channel).sort.reverse
 
   haml :channel
