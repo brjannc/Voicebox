@@ -86,11 +86,8 @@ get %r{^/(\w+)/(\d{4})/(\d{2})/?$} do |channel, year, month|
   @channel_name = settings.channels[channel]['channel-name']
   @dates = Set.new(channel_dates(channel, @year, @month))
 
-  @first = Date.new(@year, @month, 1)
-  @last = (@first >> 1) - 1
-
-  @fill_prev = @first.wday
-  @fill_next = 6 - @last.wday
+  @date = Date.new(@year, @month, 1)
+  @date -= @date.wday
 
   haml :month
 end
@@ -119,6 +116,10 @@ end
 helpers do
   def days_in_month(year, month)
     (Date.new(year, 12, 31) << (12 - month)).day
+  end
+
+  def channel_log_uri(channel, date)
+    date.strftime("/#{channel}/%Y/%m/%d/")
   end
 
   def channel_log(channel, date)

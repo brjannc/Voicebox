@@ -1,29 +1,29 @@
 #content.container
   %h1 #{@channel_name}
   %h2 #{Date::MONTHNAMES[@month]} #{@year}
-
-  -# this is pretty hideous and could really be made much nicer; maybe by using
-    just one date object and incrementing it as we go
   %ol.calendar
-    - if @fill_prev > 0
+    - if @date.month != @month 
       %li#prev-month
         %ol
-          - @fill_prev.downto(1) do |i|
-            %li= (@first - i).day
+          - until @date.month == @month 
+            %li= @date.day
+            - @date += 1
 
     %li#this-month
       %ol
-        - for i in 1..days_in_month(@year, @month) do
-          - if @dates.include?(Date.new(@year, @month, i))
-            %li.clickable{:data => {:location => "/#{@channel}/#{@year}/#{sprintf("%02d", @month)}/#{sprintf("%02d", i)}"}}= i
-          - else
-            %li= i
+        - until @date.month != @month
+          - if @dates.include?(@date) 
+            %li.clickable{:data => {:location => channel_log_uri(@channel, @date)}}= @date.day
+          - else 
+            %li= @date.day
+          - @date += 1
 
-    - if @fill_next > 0
+    - if @date.wday != 0 
       %li#next-month
         %ol
-          - for i in 1..@fill_next do
-            %li= i
+          - until @date.wday == 0 
+            %li= @date.day
+            - @date += 1
   :javascript
     $('.clickable').click(function() {
       window.location=$(this).attr('data-location');
