@@ -2,7 +2,9 @@
 #content.container
   %h1 #{@channel_name}
   %h2 #{Date::MONTHNAMES[@month]} #{@year}
-    
+
+  -# this is pretty hideous and could really be made much nicer; maybe by using
+    just one date object and incrementing it as we go
   %ol.calendar
     - if @fill_prev > 0
       %li#prev-month
@@ -13,13 +15,18 @@
     %li#this-month
       %ol
         - for i in 1..days_in_month(@year, @month) do
-          %li= i
+          - if @dates.include?(Date.new(@year, @month, i))
+            %li.clickable= link_to("/#{@channel}/#{@year}/#{sprintf("%02d", @month)}/#{sprintf("%02d", i)}/", i)
+          - else
+            %li= i
 
     - if @fill_next > 0
       %li#next-month
         %ol
           - for i in 1..@fill_next do
             %li= i
-      -#
-        pretty_date = date.strftime("%Y-%m-%d")
-        link_to("/#{@channel}/#{pretty_date}.html", pretty_date)
+  :javascript
+    $('.clickable').click(function() {
+      window.location=$(this).find('a').attr('href');
+      return false;
+    });
