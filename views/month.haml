@@ -15,7 +15,7 @@
       %ol
         - for i in 1..days_in_month(@year, @month) do
           - if @dates.include?(Date.new(@year, @month, i))
-            %li.clickable= link_to("/#{@channel}/#{@year}/#{sprintf("%02d", @month)}/#{sprintf("%02d", i)}/", i)
+            %li.clickable{:data => {:location => "/#{@channel}/#{@year}/#{sprintf("%02d", @month)}/#{sprintf("%02d", i)}"}}= i
           - else
             %li= i
 
@@ -26,6 +26,6 @@
             %li= i
   :javascript
     $('.clickable').click(function() {
-      window.location=$(this).find('a').attr('href');
+      window.location=$(this).attr('data-location');
       return false;
     });
