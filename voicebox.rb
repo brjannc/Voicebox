@@ -20,10 +20,14 @@ require 'date'
 require 'haml'
 require 'iconv'
 require 'sinatra'
+require 'sinatra/reloader' if development?
 require 'yaml'
 
 configure do
   # TODO: set up default config with some sample logs
+
+  set :static_cache_control, [:public, :max_age => 604800] unless development?
+  set :threaded, true
 
   if File.readable?('config.yml')
     config = YAML::load_file('config.yml')
@@ -45,6 +49,11 @@ end
 get %r{^/(\w+)/(\d{4})/(\d{2})/(\d{2})/?$} do |channel, year, month, day|
   pass unless settings.channels.include?(channel)
 
+  config = settings.channels[channel]
+ 
+  @channel_name = config['channel-name']
+  @log_format = config['log-format']
+
   begin
     date = Date.new(year.to_i, month.to_i, day.to_i)
   rescue
@@ -56,8 +65,6 @@ get %r{^/(\w+)/(\d{4})/(\d{2})/(\d{2})/?$} do |channel, year, month, day|
 
   @log = channel_log(channel, date)
   pass unless File.readable?(@log)
-
-  @log_format = settings.channels[channel]['log-format']
 
   case format
   when /html?/
@@ -78,8 +85,6 @@ get %r{^/(\w+)/(\d{4})/(\d{2})/?$} do |channel, year, month|
   @channel = channel
   @channel_name = settings.channels[channel]['channel-name']
   @dates = Set.new(channel_dates(channel, @year, @month))
-
-  pass if @dates.empty?
 
   @first = Date.new(@year, @month, 1)
   @last = (@first >> 1) - 1
@@ -134,9 +139,6 @@ helpers do
       pattern = template.gsub(/(%[^%])+/, '*')
     end
     
-    print "pattern = #{pattern}\n"
-    print "template = #{template}\n"
-
     Dir.glob(pattern).map { |filename| DateTime.strptime(filename, template) }
   end
 

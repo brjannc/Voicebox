@@ -1,4 +1,5 @@
 #content.container
+  %h1= @channel_name
   %div.well
     - File.open(@log, 'r:utf-8') do |file|
       - while (line = file.gets)
