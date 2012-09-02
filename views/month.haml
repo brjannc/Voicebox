@@ -1,0 +1,25 @@
+!!! 5
+#content.container
+  %h1 #{@channel_name}
+  %h2 #{Date::MONTHNAMES[@month]} #{@year}
+    
+  %ol.calendar
+    - if @fill_prev > 0
+      %li#prev-month
+        %ol
+          - @fill_prev.downto(1) do |i|
+            %li= (@first - i).day
+
+    %li#this-month
+      %ol
+        - for i in 1..days_in_month(@year, @month) do
+          %li= i
+
+    - if @fill_next > 0
+      %li#next-month
+        %ol
+          - for i in 1..@fill_next do
+            %li= i
+      -#
+        pretty_date = date.strftime("%Y-%m-%d")
+        link_to("/#{@channel}/#{pretty_date}.html", pretty_date)

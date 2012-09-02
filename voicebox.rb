@@ -41,17 +41,18 @@ configure do
   set :ic, Iconv.new('UTF-8//IGNORE', 'UTF-8')
 end
 
-# match /<channel>/<date>[.format]
-get %r{^/(\w+)/(\d{4}-\d{2}-\d{2})(?:\.(\w+))?$} do |channel, date, format|
+# match /<channel>/<year>/<month>/<day>/[?format=html|txt]
+get %r{^/(\w+)/(\d{4})/(\d{2})/(\d{2})/?$} do |channel, year, month, day|
   pass unless settings.channels.include?(channel)
 
   begin
-    date = Date.parse(date)
+    date = Date.new(year.to_i, month.to_i, day.to_i)
   rescue
     pass
   end
 
-  format = 'html' if format.nil?
+  #format = params[:format].nil? ? 'html' : params[:format]
+  format = 'html'
 
   @log = channel_log(channel, date)
   pass unless File.readable?(@log)
@@ -68,14 +69,41 @@ get %r{^/(\w+)/(\d{4}-\d{2}-\d{2})(?:\.(\w+))?$} do |channel, date, format|
   end
 end
 
-get %r{^/(\w+)/?$} do |channel|
+get %r{^/(\w+)/(\d{4})/(\d{2})/?$} do |channel, year, month|
   pass unless settings.channels.include?(channel)
+
+  @year = year.to_i
+  @month = month.to_i
 
   @channel = channel
   @channel_name = settings.channels[channel]['channel-name']
-  @dates = channel_dates(channel).sort.reverse
+  @dates = Set.new(channel_dates(channel, @year, @month))
 
-  haml :channel
+  pass if @dates.empty?
+
+  @first = Date.new(@year, @month, 1)
+  @last = (@first >> 1) - 1
+
+  @fill_prev = @first.wday
+  @fill_next = 6 - @last.wday
+
+  haml :month
+end
+
+get %r{^/(\w+)/?$} do |channel|
+  pass unless settings.channels.include?(channel)
+
+  redirect Date.today.strftime("/#{channel}/%Y/%m/")
+
+  # @channel = channel
+  # @channel_name = settings.channels[channel]['channel-name']
+  # @dates = channel_dates(channel)
+
+  # pass if @dates.empty?
+
+  # @dates.sort!.reverse!
+
+  # haml :channel
 end
 
 # match /
@@ -84,6 +112,10 @@ get %r{^/$} do
 end
 
 helpers do
+  def days_in_month(year, month)
+    (Date.new(year, 12, 31) << (12 - month)).day
+  end
+
   def channel_log(channel, date)
     # TODO: error checking
 
@@ -91,11 +123,19 @@ helpers do
     date.strftime("#{config['log-directory']}/#{config['log-template']}")
   end
 
-  def channel_dates(channel)
+  def channel_dates(channel, year = nil, month = nil)
     # TODO: error checking
     config = settings.channels[channel]
     template = "#{config['log-directory']}/#{config['log-template']}"
-    pattern = template.gsub(/(%[^%])+/, '*')
+
+    if year and month
+      pattern = template.gsub(/%Y/, year.to_s).gsub(/%m/, sprintf("%02d", month)).gsub(/(%[^%])+/, '*')
+    else
+      pattern = template.gsub(/(%[^%])+/, '*')
+    end
+    
+    print "pattern = #{pattern}\n"
+    print "template = #{template}\n"
 
     Dir.glob(pattern).map { |filename| DateTime.strptime(filename, template) }
   end
@@ -107,7 +147,7 @@ helpers do
   end
 
   def linkify(text)
-      CGI.escapeHTML(text).gsub %r{((https?://|www\.)([-\w\.]+)+(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)?)}, %Q{<a href="\\1">\\1</a>}
+    CGI.escapeHTML(text).gsub %r{((https?://|www\.)([-\w\.]+)+(:\d+)?(/([-\w/_\.]*(\?\S+)?)?)?)}, %Q{<a href="\\1">\\1</a>}
   end
 
   def sanitize(text)
@@ -140,7 +180,7 @@ helpers do
 
     # debugging
     if text_class.nil?
-      puts "Unmatched text! #{line}"
+      print "Unmatched text! #{line}\n"
       text_class = "message"
     end
 
