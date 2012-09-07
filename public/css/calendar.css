@@ -30,7 +30,7 @@ h1					{display: block; width: 200px;height:76px;
  -------------------------*/
 li li               {width:6em;height:6em;float:left;margin:.2em; padding:.2em;overflow:auto;
 					 background: url(/img/day-bg.png) bottom right no-repeat; }
-
+li li.clickable:hover { background: url(/img/day-bg-hover.png) bottom right no-repeat; }
 /*
  * Day content (UL/OL & P)
  -------------------------*/
@@ -49,4 +49,4 @@ li li.holiday       {  }
  * Inactive months
  -------------------------*/
 li#prev-month li,
-li#next-month li     { background: url(/img/day-bg-inactive.png);}
+li#next-month li     { background: url(/img/day-bg-inactive.png) bottom right no-repeat;}
