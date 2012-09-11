@@ -18,7 +18,6 @@
 require 'cgi'
 require 'date'
 require 'haml'
-require 'iconv'
 require 'sinatra'
 require 'sinatra/reloader' if development?
 require 'yaml'
@@ -41,8 +40,6 @@ configure do
     set :formats, config['formats']
     set :version, "0.1"
   end
-  
-  set :ic, Iconv.new('UTF-8//IGNORE', 'UTF-8')
 end
 
 # match /<channel>/<year>/<month>/<day>/[?format=html|txt]
@@ -50,7 +47,7 @@ get %r{^/(\w+)/(\d{4})/(\d{2})/(\d{2})/?$} do |channel, year, month, day|
   pass unless settings.channels.include?(channel)
 
   config = settings.channels[channel]
- 
+  
   @channel_name = config['channel-name']
   @log_format = config['log-format']
 
@@ -154,7 +151,7 @@ helpers do
   end
 
   def sanitize(text)
-    settings.ic.iconv(text + ' ')[0..-2]
+    text.chars.select { |c| c.valid_encoding? }.join
   end
 
   def markup(line, format)
