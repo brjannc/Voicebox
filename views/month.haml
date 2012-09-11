@@ -15,7 +15,7 @@
           - if @dates.include?(@date) 
             %li.clickable{:data => {:location => channel_log_uri(@channel, @date)}}= @date.day
           - else 
-            %li= @date.day
+            %li.unavailable= @date.day
           - @date += 1
 
     - if @date.wday != 0 
